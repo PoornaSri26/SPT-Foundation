@@ -2,6 +2,8 @@
 
 Web app that estimates **allowable bearing pressure for shallow footings** and **safe load on circular piles** from Standard Penetration Test (SPT) data — implementing the method of **Khatri, Yadav & Sundriyal (2023)**, *Smart Construction and Sustainable Cities* 1:10, [doi:10.1007/s44268-023-00012-4](https://link.springer.com/article/10.1007/s44268-023-00012-4).
 
+**Live demo:** https://poornasri26.github.io/SPT-Foundation/ (GitHub Pages)
+
 No build step, no dependencies — open `index.html` in any browser, or serve the folder:
 
 ```
