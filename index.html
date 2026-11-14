@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SPT Foundation Calculator — Khatri et al. (2023)</title>
+<style>
+:root{
+  --bg:#f4f6fa;--card:#ffffff;--tx:#1a2233;--mu:#64748b;--ac:#4f46e5;--ac2:#fff;
+  --bd:#e2e8f0;--ok:#047857;--warn:#b45309;--sand:#d97706;--clay:#0d9488;
+  --shadow:0 1px 3px rgba(15,23,42,.08),0 4px 14px rgba(15,23,42,.05);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1420;--card:#1a2130;--tx:#e6eaf2;--mu:#8b98ad;--ac:#818cf8;--ac2:#10131c;
+  --bd:#2a3448;--ok:#34d399;--warn:#fbbf24;--sand:#f59e0b;--clay:#2dd4bf;--shadow:0 1px 3px rgba(0,0,0,.4)}
+}
+:root[data-theme="dark"]{
+  --bg:#0f1420;--card:#1a2130;--tx:#e6eaf2;--mu:#8b98ad;--ac:#818cf8;--ac2:#10131c;
+  --bd:#2a3448;--ok:#34d399;--warn:#fbbf24;--sand:#f59e0b;--clay:#2dd4bf;--shadow:0 1px 3px rgba(0,0,0,.4)
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+header.top{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;padding:22px 16px 20px}
+header.top .wrap{max-width:980px;margin:0 auto}
+header.top h1{font-size:21px;margin:0 0 4px;font-weight:700;letter-spacing:.2px}
+header.top p{margin:0;font-size:13px;opacity:.85}
+header.top a{color:#c7d2fe}
+.topbar{max-width:980px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:10px 16px 0}
+.topbar .spacer{flex:1}
+.iconbtn{background:var(--card);border:1px solid var(--bd);color:var(--tx);border-radius:8px;
+  padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;box-shadow:var(--shadow)}
+main{max-width:980px;margin:0 auto;padding:16px 16px 40px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h2{font-size:14px;margin:0 0 12px;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:4px;font-weight:500}
+input,select{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;
+  background:var(--bg);color:var(--tx);font:inherit;font-size:14px}
+input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--ac) 35%,transparent);border-color:var(--ac)}
+.scroll{overflow-x:auto;border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{color:var(--mu);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+td input,td select{padding:6px;min-width:58px;text-align:right}
+td input[type=number]{text-align:right}
+tr:hover td{background:color-mix(in srgb,var(--ac) 4%,transparent)}
+.btn{padding:9px 14px;border:1px solid var(--bd);border-radius:9px;background:var(--card);color:var(--tx);
+  font:inherit;font-size:13px;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--ac);color:var(--ac)}
+.btn.p{background:var(--ac);color:var(--ac2);border-color:var(--ac);font-weight:600}
+.btn.p:hover{filter:brightness(1.08);color:var(--ac2)}
+.btn.ghost{background:transparent}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.row.end{justify-content:flex-end}
+.big{font-size:30px;font-weight:800;color:var(--ok);line-height:1.1}
+.big small{font-size:15px;font-weight:500;color:var(--mu)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--bd);font-size:13.5px}
+.kv:last-child{border-bottom:none}
+.kv span{color:var(--mu)}
+.kv b{font-variant-numeric:tabular-nums;text-align:right}
+.warn{color:var(--warn);font-size:12.5px;margin-top:10px}
+.note{color:var(--mu);font-size:12px;margin-top:8px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--card);border:1px solid var(--bd);
+  border-radius:12px;padding:5px;box-shadow:var(--shadow)}
+.tabs button{flex:1;padding:10px;border:none;background:transparent;color:var(--tx);border-radius:9px;
+  font:inherit;font-weight:600;cursor:pointer;font-size:14px}
+.tabs button.on{background:var(--ac);color:var(--ac2)}
+.result-hero{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.result-hero .grow{flex:1;min-width:200px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--bd);color:var(--mu)}
+.chip.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,var(--bd))}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mu);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.coll{border:1px solid var(--bd);border-radius:10px;margin-top:10px;overflow:hidden}
+.coll>summary{padding:10px 12px;cursor:pointer;font-size:13px;font-weight:600;color:var(--mu);list-style:none}
+.coll>summary::before{content:"▸ ";color:var(--ac)}
+.coll[open]>summary::before{content:"▾ "}
+.coll .inner{padding:0 12px 12px}
+.hide{display:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes growBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes dash{to{stroke-dashoffset:0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.card.anim{animation:fadeUp .5s cubic-bezier(.2,.7,.3,1) both}
+.flowbox{fill:var(--card);stroke:var(--ac);stroke-width:1.4;rx:8}
+.flowtxt{fill:var(--tx);font-size:11px;font-weight:600}
+.flowsub{fill:var(--mu);font-size:9.5px}
+.flowarrow{stroke:var(--ac);stroke-width:1.6;fill:none;marker-end:url(#arr)}
+@media print{
+  header.top,.topbar,.tabs,.btn,.row{display:none!important}
+  body{background:#fff}.card{box-shadow:none;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>SPT Foundation Calculator</h1>
+    <p>Allowable bearing pressure (shallow footings) and safe pile load from Standard Penetration Test data —
+       method of <a href="https://link.springer.com/article/10.1007/s44268-023-00012-4" target="_blank" rel="noopener">Khatri, Yadav &amp; Sundriyal (2023)</a>,
+       Smart Construction and Sustainable Cities 1:10. IS 6403 / Teng (1962) / Broms (1966) / Berezantsev (1961).</p>
+  </div>
+</header>
+<div class="topbar">
+  <div class="spacer"></div>
+  <button class="iconbtn" id="themeBtn">◐ Theme</button>
+</div>
+<main>
+  <div class="tabs">
+    <button id="t1" class="on">▭ Shallow footing</button>
+    <button id="t2">⬤ Pile (circular)</button>
+  </div>
+
+  <div class="card">
+    <h2>Foundation geometry</h2>
+    <div class="g" id="geo"></div>
+  </div>
+
+  <div class="card">
+    <details class="coll" open>
+      <summary>Calculation workflow (after Khatri et al., Figs. 1–5)</summary>
+      <div class="inner">
+        <svg viewBox="0 0 720 210" style="width:100%;height:auto">
+          <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--ac)"/></marker></defs>
+          <rect class="flowbox" x="10" y="20" width="150" height="60" rx="10"/><text class="flowtxt" x="85" y="45" text-anchor="middle">1 · Input</text><text class="flowsub" x="85" y="62" text-anchor="middle">SPT blows, footing/pile</text><text class="flowsub" x="85" y="74" text-anchor="middle">geometry, GWT</text>
+          <rect class="flowbox" x="190" y="20" width="150" height="60" rx="10"/><text class="flowtxt" x="265" y="45" text-anchor="middle">2 · Corrections</text><text class="flowsub" x="265" y="62" text-anchor="middle">C_E·C_B·C_R·C_S → N₆₀</text><text class="flowsub" x="265" y="74" text-anchor="middle">C_N overburden, dilatancy</text>
+          <rect class="flowbox" x="370" y="20" width="150" height="60" rx="10"/><text class="flowtxt" x="445" y="45" text-anchor="middle">3 · Soil properties</text><text class="flowsub" x="445" y="62" text-anchor="middle">γ, D_r, φ, c_u per layer</text>
+          <rect class="flowbox" x="550" y="20" width="160" height="60" rx="10"/><text class="flowtxt" x="630" y="45" text-anchor="middle">4 · Capacity</text><text class="flowsub" x="630" y="62" text-anchor="middle">IS 6403 / Teng · Broms /</text><text class="flowsub" x="630" y="74" text-anchor="middle">Berezantsev, FS applied</text>
+          <path class="flowarrow" d="M160,50 H190 M340,50 H370 M520,50 H550"/>
+          <rect class="flowbox" x="190" y="120" width="240" height="60" rx="10"/><text class="flowtxt" x="310" y="145" text-anchor="middle">5 · Results</text><text class="flowsub" x="310" y="162" text-anchor="middle">q_allow (kPa) or Q_allow (kN),</text><text class="flowsub" x="310" y="174" text-anchor="middle">layer table + soil profile</text>
+          <path class="flowarrow" d="M630,80 V105 H430 V120"/>
+          <text class="flowsub" x="365" y="100" text-anchor="middle">governing = min(shear, settlement)</text>
+        </svg>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>SPT test data</h2>
+    <p class="note" style="margin-top:-6px">Enter blows for each 150&nbsp;mm drive. Seating blows (0–150&nbsp;mm) are ignored;
+      N<sub>f</sub> = sum of the 150–300 and 300–450&nbsp;mm counts.</p>
+    <div class="scroll"><table>
+      <thead><tr>
+        <th>Depth z (m)</th><th>Soil</th><th>150–300</th><th>300–450</th><th>N<sub>f</sub></th><th></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    <div class="row">
+      <button class="btn" id="add">+ Add test</button>
+      <button class="btn" id="ex">Load paper example</button>
+      <button class="btn ghost" id="clr">Clear</button>
+      <span class="note" style="margin:0">Paper check: shallow ≈ 208–209 kPa · pile ≈ 864–870 kN</span>
+      <span style="flex:1"></span>
+      <button class="btn p" id="solve">Solve</button>
+    </div>
+    <div class="warn" id="err"></div>
+  </div>
+
+  <div class="card">
+    <details class="coll" open>
+      <summary>SPT corrections &amp; analysis settings</summary>
+      <div class="inner">
+        <div class="g">
+          <div><label>Water table depth (m)</label><input id="gwt" type="number" step="any" value="3"></div>
+          <div id="settleW"><label>Allowable settlement (mm)</label><input id="settle" type="number" step="any" value="40"></div>
+          <div><label>Energy ratio E<sub>m</sub>/E<sub>r</sub> (C<sub>E</sub>)</label>
+            <select id="ce"><option value="0.75">0.75 — Donut hammer</option><option value="0.85">0.85 — Safety hammer</option><option value="0.9">0.90 — Auto hammer</option><option value="1" selected>1.00 — Manual</option></select>
+          </div>
+          <div><label>Borehole diameter (mm)</label>
+            <select id="cb"><option value="65–115">65–115 → C<sub>B</sub>=1.00</option><option value="150" selected>150 → C<sub>B</sub>=1.05</option><option value="200">200 → C<sub>B</sub>=1.15</option></select>
+          </div>
+          <div><label>Sampler</label>
+            <select id="cs"><option value="1" selected>Standard → C<sub>S</sub>=1.00</option><option value="1.1">Lined → C<sub>S</sub>=1.10</option><option value="1.2">Lined, constant → C<sub>S</sub>=1.20</option><option value="1.3">Lined, loose → C<sub>S</sub>=1.30</option></select>
+          </div>
+          <div><label>&nbsp;</label><label style="display:flex;align-items:center;gap:6px;color:var(--tx)"><input id="rodOn" type="checkbox" style="width:auto"> Apply rod-length C<sub>R</sub></label></div>
+        </div>
+        <p class="note">N<sub>60</sub> = N<sub>f</sub>·C<sub>E</sub>·C<sub>B</sub>·C<sub>R</sub>·C<sub>S</sub>, then overburden C<sub>N</sub> and dilatancy corrections.
+          When C<sub>R</sub> is enabled it is estimated from test depth (Bowles): &lt;3&nbsp;m → 0.75, 3–4 → 0.80, 4–6 → 0.85, 6–10 → 0.95, &gt;10 → 1.00.
+          The paper's app applies only C<sub>E</sub>, so defaults reproduce its results.</p>
+      </div>
+    </details>
+  </div>
+
+  <div id="out"></div>
+
+  <div class="card">
+    <h2>Method &amp; references</h2>
+    <div class="kv"><span>Corrections</span><b>Energy, borehole, rod length, sampler, overburden C<sub>N</sub>, dilatancy</b></div>
+    <div class="kv"><span>Soil properties</span><b>γ, D<sub>r</sub>, φ (N′-based), c<sub>u</sub> from corrected N</b></div>
+    <div class="kv"><span>Shallow — shear</span><b>IS 6403–1981 (Meyerhof factors, shape/depth/water factors, local shear)</b></div>
+    <div class="kv"><span>Shallow — settlement</span><b>Teng (1962), q<sub>sp</sub> at specified settlement (IS 8009 basis)</b></div>
+    <div class="kv"><span>Pile skin friction</span><b>Broms (1966): f<sub>s</sub>=σ′<sub>v</sub>·tan(0.75φ) sand / αc<sub>u</sub> clay, ≤100 kPa</b></div>
+    <div class="kv"><span>Pile tip</span><b>Berezantsev (1961) N<sub>q</sub>, q<sub>pu</sub>≤11 000 kPa, arching for L/D&gt;15</b></div>
+    <div class="kv"><span>Factors of safety</span><b>Shallow: FS=3 · Pile: FS=2.5</b></div>
+    <p class="warn" style="margin-bottom:0">Educational tool. Soil properties come from empirical correlations; results must be checked by a
+      qualified geotechnical engineer before design use. Method inspired by
+      <a href="https://link.springer.com/article/10.1007/s44268-023-00012-4" target="_blank" rel="noopener">Khatri et al. (2023)</a>.</p>
+  </div>
+</main>
+
+<script>
+"use strict";
+var mode=1, $=function(s){return document.querySelector(s)};
+var GW=9.81;
+
+/* ---------- geometry panels ---------- */
+var geoHTML={
+1:'<div><label>Footing shape</label><select id="shape"><option value="strip">Strip</option><option value="square">Square</option><option value="circ">Circular</option><option value="rect" selected>Rectangular</option></select></div>'+
+  '<div><label>Width / Ø B (m)</label><input id="B" type="number" step="any" value="3"></div>'+
+  '<div id="Lw"><label>Length L (m)</label><input id="L" type="number" step="any" value="5"></div>'+
+  '<div><label>Depth D<sub>f</sub> (m)</label><input id="Df" type="number" step="any" value="1.5"></div>',
+2:'<div><label>Pile Ø D (m)</label><input id="D" type="number" step="any" value="0.4"></div>'+
+  '<div><label>Pile length L (m)</label><input id="PL" type="number" step="any" value="14"></div>'
+};
+function setMode(m){mode=m;$('#t1').className=m==1?'on':'';$('#t2').className=m==2?'on':'';
+  $('#geo').innerHTML=geoHTML[m];$('#out').innerHTML='';$('#err').textContent='';
+  $('#settleW').style.display=m==1?'':'none';
+  if(m==1){$('#shape').onchange=shapeUI;shapeUI()}}
+function shapeUI(){$('#Lw').style.display=$('#shape').value=='rect'?'':'none'}
+
+/* ---------- SPT table ---------- */
+function addRow(d,t,a,b){
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td><input type="number" step="any" value="'+(d==null?'':d)+'"></td>'+
+   '<td><select><option value="sand">Cohesionless</option><option value="clay"'+(t=='clay'?' selected':'')+'>Cohesive</option></select></td>'+
+   '<td><input type="number" step="any" value="'+(a==null?'':a)+'"></td>'+
+   '<td><input type="number" step="any" value="'+(b==null?'':b)+'"></td>'+
+   '<td class="nf"></td><td><button class="btn ghost" style="padding:3px 9px">×</button></td>';
+  tr.querySelector('button').onclick=function(){tr.remove();updNF(tr)};
+  tr.querySelectorAll('input')[1].oninput=function(){updNF(tr)};
+  tr.querySelectorAll('input')[2].oninput=function(){updNF(tr)};
+  $('#rows').appendChild(tr);updNF(tr);
+}
+function updNF(tr){var i=tr.querySelectorAll('input'),v=(parseFloat(i[1].value)||0)+(parseFloat(i[2].value)||0);
+  tr.querySelector('.nf').textContent=isNaN(v)?'–':v}
+function example(){
+  $('#rows').innerHTML='';
+  if(mode==1){
+    /* Khatri et al. (2023) shallow example — 8 layers, rect 5×3 m, Df=1.5 m, GWT=3 m */
+    var nf=[[0.75,4,4],[1.5,5,5],[2.25,7,8],[3,7,8],[3.75,9,9],[4.5,10,10],[5.25,8,8],[6,12,13]];
+    nf.forEach(function(r){addRow(r[0],'sand',r[1],r[2])});
+    $('#shape').value='rect';$('#B').value=3;$('#L').value=5;$('#Df').value=1.5;
+    $('#gwt').value=3;$('#settle').value=40;shapeUI();
+  }else{
+    /* Khatri et al. (2023) pile example — D=0.4 m, L=14 m, GWT=3 m */
+    addRow(0,'sand',3,3);addRow(3,'clay',1,1);addRow(9,'sand',18,18);
+    $('#D').value=0.4;$('#PL').value=14;$('#gwt').value=3;
+  }
+}
+function num(id){var v=parseFloat($(id).value);return isNaN(v)?NaN:v}
+
+/* ---------- read & correct SPT data ---------- */
+function rodFactor(z){return z<3?0.75:z<4?0.8:z<6?0.85:z<10?0.95:1.0}
+function readLayers(){
+  var L=[],bad=false;
+  document.querySelectorAll('#rows tr').forEach(function(tr){
+    var i=tr.querySelectorAll('input'),s=tr.querySelector('select');
+    var z=parseFloat(i[0].value),a=parseFloat(i[1].value),b=parseFloat(i[2].value);
+    if(isNaN(z))return;
+    if(isNaN(a)||isNaN(b)){bad=true;return}
+    L.push({z:z,t:s.value,nf:a+b});
+  });
+  if(bad)return{err:'Fill in both blow counts for every test row.'};
+  L=L.filter(function(l){return !isNaN(l.z)&&l.z>=0}).sort(function(a,b){return a.z-b.z});
+  if(!L.length)return{err:'Add at least one SPT test.'};
+  return{layers:L};
+}
+function corrFactors(){
+  var ce=num('#ce'),cbV=$('#cb').value;
+  var cb=cbV==='65–115'?1.0:cbV==='150'?1.05:1.15;
+  var cs=parseFloat($('#cs').value);
+  var rodOn=$('#rodOn')&&$('#rodOn').checked;
+  return{ce:isNaN(ce)?1:ce,cb:cb,cs:isNaN(cs)?1:cs,rodOn:!!rodOn};
+}
+
+/* unit weight guess kN/m³ from corrected N (Bowles-style correlations used in the paper) */
+function gamma(N,t){
+  if(t=='clay')return N<2?16:N<8?17:N<15?18:19;
+  return N<4?16:N<10?17:N<30?18:N<50?19:20;
+}
+/* overburden correction C_N = 0.77·log10(2000/σ′v) for σ′v ≥ 25 kPa, else 1 (Bowles) */
+function cn(s){return s>=25?Math.min(2,0.77*Math.log10(2000/s)):1}
+/* dilatancy-corrected N′ for dense sand (N > 20), continuous at N=20 */
+function npSand(n){return n>20?10+0.5*n:n}
+/* friction angle from N′ — linear SPT correlation calibrated to the
+   paper's worked examples (N′=18→30°, N′=26→38°), bounded 20–45° */
+function phi(Np){return Math.max(20,Math.min(45,Np+12))}
+
+/* effective vertical stress σ′v(z) by integrating layers */
+function buildProfile(L,gwt,c){
+  L.forEach(function(l,i){
+    l.top=i? (L[i-1].z+l.z)/2 : 0;
+    l.bot=i<L.length-1 ? (l.z+L[i+1].z)/2 : 1e9;
+    /* preliminary unit weight from N60 */
+    var n60=l.nf*c.ce*c.cb*c.cs*(c.rodOn?rodFactor(l.z):1);
+    l.n60=n60; l.g0=gamma(n60,l.t);
+  });
+  function sig(z){
+    var s=0;
+    L.forEach(function(l){
+      var a=l.top,b=Math.min(l.bot,z);if(b<=a)return;
+      var up=Math.max(0,Math.min(b,gwt)-a), dn=(b-a)-up;
+      /* below WT use buoyant unit weight γ′ = γ − γw */
+      s+=up*l.g0+dn*(l.g0-GW);
+    });
+    return s;
+  }
+  L.forEach(function(l){
+    l.sv=sig(l.z);
+    var Nc=cn(l.sv), Nc60=l.n60*Nc;
+    l.cn=Nc; l.nc=Math.floor(Nc60);
+    if(l.t=='sand'){
+      l.np=npSand(l.nc);
+      l.phi=phi(l.np);
+      l.dr=Math.min(1,Math.sqrt(l.np/60));
+      /* updated moist unit weight from corrected N′ */
+      l.g=gamma(l.np,'sand');
+      l.cu=0;
+    }else{
+      l.np=l.nc; l.phi=0; l.dr=NaN;
+      l.cu=7.5*l.nc;
+      l.g=gamma(l.nc,'clay');
+    }
+  });
+  return sig;
+}
+
+/* ---------- helpers ---------- */
+function f(x,d){return (x==null||isNaN(x))?'–':(+x).toFixed(d==null?1:d)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function kv(a,b){return '<div class="kv"><span>'+a+'</span><b>'+b+'</b></div>'}
+function layerTable(L){
+  return '<div class="scroll"><table><tr><th>z (m)</th><th>Layer</th><th>N<sub>f</sub></th><th>N<sub>60</sub></th><th>C<sub>N</sub></th><th>N<sub>cor</sub></th><th>N′</th><th>γ (kN/m³)</th><th>D<sub>r</sub></th><th>φ°</th><th>c<sub>u</sub> kPa</th></tr>'+
+  L.map(function(l){return '<tr><td>'+f(l.z,2)+'</td><td>'+(l.t=='sand'?'Sand':'Clay')+'</td><td>'+f(l.nf,0)+'</td><td>'+f(l.n60,1)+'</td><td>'+f(l.cn,2)+'</td><td>'+l.nc+'</td><td>'+f(l.np,1)+'</td><td>'+f(l.g,1)+'</td><td>'+f(l.dr,2)+'</td><td>'+(l.t=='sand'?f(l.phi,1):'–')+'</td><td>'+(l.t=='clay'?f(l.cu,1):'–')+'</td></tr>'}).join('')+'</table></div>';
+}
+
+/* ---------- soil profile + N chart (SVG) ---------- */
+function charts(L,extra){
+  /* extra: {B, Df} for footing outline or {D,PL} pile */
+  var W=560,H=380,padL=46,padR=16,padT=14,padB=30;
+  var zmax=Math.max.apply(null,L.map(function(l){return l.z}))+2;
+  if(extra.PL)zmax=Math.max(zmax,extra.PL+1);
+  var ymax=Math.max.apply(null,L.map(function(l){return Math.max(l.nf,l.np||0)}))*1.15||10;
+  var X=function(z){return padL+(z/zmax)*(W-padL-padR)};
+  var Yh=function(z){return padT+(z/zmax)*(H-padT-padB)};      /* depth → y */
+  var Yn=function(n){return H-padB-(n/ymax)*(H-padT-padB)};    /* N → y */
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" font-family="inherit">';
+  /* grid */
+  for(var i=0;i<=4;i++){var y=padT+(H-padT-padB)*i/4;
+    svg+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="var(--bd)" stroke-width="1"/>'+
+         '<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" font-size="10" fill="var(--mu)">'+f(zmax*(1-i/4),1)+'</text>';}
+  /* layers */
+  var lx=W-70;
+  L.forEach(function(l){
+    var y1=Yh(l.top==0?0:l.top),y2=Yh(Math.min(l.bot,zmax));
+    if(l.top==0)y1=Yh(0);
+    var col=l.t=='sand'?'var(--sand)':'var(--clay)';
+    svg+='<rect x="'+lx+'" y="'+y1+'" width="34" height="'+Math.max(2,y2-y1)+'" fill="'+col+'" opacity="0.85" rx="2"/>';
+    if(y2-y1>14)svg+='<text x="'+(lx+17)+'" y="'+((y1+y2)/2)+'" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">'+(l.t=='sand'?'S':'C')+'</text>';
+  });
+  svg+='<text x="'+(lx+17)+'" y="'+(padT-4)+'" text-anchor="middle" font-size="10" fill="var(--mu)">Soil</text>';
+  /* GWT line */
+  var gwt=num('#gwt');
+  if(!isNaN(gwt)&&gwt<zmax){var yg=Yh(gwt);
+    svg+='<line x1="'+padL+'" y1="'+yg+'" x2="'+lx+'" y2="'+yg+'" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="5 3"/>'+
+         '<text x="'+(lx-4)+'" y="'+(yg-4)+'" text-anchor="end" font-size="10" fill="#0ea5e9">GWT '+f(gwt,1)+'m</text>';}
+  /* footing / pile overlay */
+  if(extra.B){
+    var yb=Yh(extra.Df),yt=Yh(extra.Df+extra.B);
+    svg+='<rect x="'+padL+'" y="'+yb+'" width="'+(lx-padL-8)+'" height="'+Math.max(4,yt-yb)+'" fill="var(--ac)" opacity="0.18" stroke="var(--ac)" stroke-width="1.5"/>'+
+         '<text x="'+(padL+4)+'" y="'+(yb-4)+'" font-size="10" fill="var(--ac)"> footing B='+extra.B+'m Df='+extra.Df+'m</text>';
+  }
+  if(extra.PL){
+    svg+='<line x1="'+(lx+17)+'" y1="'+Yh(0)+'" x2="'+(lx+17)+'" y2="'+Yh(extra.PL)+'" stroke="var(--ac)" stroke-width="5" opacity="0.5"/>'+
+         '<text x="'+(lx+24)+'" y="'+Yh(extra.PL/2)+'" font-size="10" fill="var(--ac)">pile L='+extra.PL+'m</text>';
+  }
+  /* N′ bars */
+  L.forEach(function(l){
+    var y1=Yh(Math.max(0,l.top==0?0:l.top)),y2=Yh(Math.min(l.bot,zmax));
+    var n=l.np||l.nf;
+    svg+='<rect x="60" y="'+Yn(n)+'" width="'+Math.max(2,y2-y1-2)+'" height="6" fill="var(--ac)" opacity="0.8"/>';
+  });
+  /* N vs depth line */
+  var pts=L.map(function(l){return X(l.z)+','+Yn(l.np||l.nf)}).join(' ');
+  svg+='<polyline points="'+pts+'" fill="none" stroke="var(--tx)" stroke-width="1.6"/>';
+  L.forEach(function(l){
+    svg+='<circle cx="'+X(l.z)+'" cy="'+Yn(l.np||l.nf)+'" r="3" fill="var(--tx)"/>'+
+         '<text x="'+(X(l.z)+5)+'" y="'+(Yn(l.np||l.nf)-4)+'" font-size="9" fill="var(--mu)">'+f(l.np||l.nf,0)+'</text>';
+  });
+  /* axis labels */
+  svg+='<text x="'+(W/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="11" fill="var(--mu)">Depth / N profile</text>';
+  svg+='<text x="14" y="'+(H/2)+'" text-anchor="middle" font-size="11" fill="var(--mu)" transform="rotate(-90 14 '+(H/2)+')">N′</text>';
+  svg+='</svg>';
+  /* ---- N_f bar chart (animated) ---- */
+  var BW=560,BH=180,bp=30,bb=BH-34,bw=(BW-2*bp)/L.length;
+  var nmax=Math.max.apply(null,L.map(function(l){return l.nf}))||10;
+  var bar='<svg viewBox="0 0 '+BW+' '+BH+'" style="width:100%;height:auto;margin-top:10px" font-family="inherit">';
+  L.forEach(function(l,i){
+    var h=(l.nf/nmax)*bb,x=bp+i*bw+bw*0.18,w=bw*0.64;
+    var col=l.t=='sand'?'var(--sand)':'var(--clay)';
+    bar+='<rect x="'+x+'" y="'+(BH-26-h)+'" width="'+w+'" height="'+h+'" rx="3" fill="'+col+'" opacity="0.85" style="transform-box:fill-box;transform-origin:bottom;animation:growBar .6s '+(i*0.06)+'s cubic-bezier(.2,.8,.3,1.2) both"/>'+
+         '<text x="'+(x+w/2)+'" y="'+(BH-30-h)+'" text-anchor="middle" font-size="10" fill="var(--tx)" font-weight="600">'+f(l.nf,0)+'</text>'+
+         '<text x="'+(x+w/2)+'" y="'+(BH-10)+'" text-anchor="middle" font-size="9" fill="var(--mu)">'+f(l.z,2)+'</text>';
+  });
+  bar+='<text x="'+(BW/2)+'" y="14" text-anchor="middle" font-size="11" fill="var(--mu)">Field N-value per test (bar = N_f, label = depth m)</text></svg>';
+  return '<div class="card anim"><h2>Soil profile &amp; corrected N′</h2>'+svg+bar+
+   '<div class="legend"><span><i style="background:var(--sand)"></i>Cohesionless</span><span><i style="background:var(--clay)"></i>Cohesive</span><span><i style="background:var(--ac)"></i>N′ profile</span><span><i style="background:#0ea5e9"></i>Water table</span></div></div>';
+}
+
+/* ---------- footing pressure bulb diagram ---------- */
+function footingDiagram(L,B,Df,gwt,q){
+  var W=560,H=330,pad=30,zmax=Math.max(8,Df+2.2*B+1);
+  var X=function(z){return pad+z/zmax*(W-2*pad)};
+  var Yh=function(z){return pad+z/zmax*(H-2*pad)};
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" font-family="inherit">';
+  /* soil block outline */
+  s+='<rect x="'+pad+'" y="'+Yh(0)+'" width="'+(W-2*pad)+'" height="'+(H-2*pad)+'" fill="color-mix(in srgb,var(--tx) 4%,transparent)" stroke="var(--bd)"/>';
+  /* footing */
+  var fw=90,fx=W/2-fw/2;
+  s+='<rect x="'+fx+'" y="'+(Yh(Df)-9)+'" width="'+fw+'" height="18" fill="var(--ac)" rx="2"/>'+
+     '<text x="'+(W/2)+'" y="'+(Yh(Df)-14)+'" text-anchor="middle" font-size="11" fill="var(--ac)" font-weight="700">q_a = '+f(q,0)+' kPa</text>';
+  /* pressure bulb: nested ellipses under footing */
+  var levels=[[1,0.95],[0.66,0.8],[0.4,0.62],[0.18,0.42]];
+  levels.forEach(function(Lv,i){
+    var dep=Df+Lv[0]*1.8*B/2, rx=Lv[1]*fw*0.62, ry=Lv[0]*1.8*B*0.42;
+    s+='<ellipse cx="'+(W/2)+'" cy="'+Yh(dep)+'" rx="'+rx+'" ry="'+ry+'" fill="none" stroke="var(--ac)" stroke-width="1.2" opacity="'+(0.7-i*0.14)+'" stroke-dasharray="'+(i==0?'':'4 3')+'"/>';
+  });
+  /* stress arrows */
+  for(var k=-2;k<=2;k++){
+    var ax=W/2+k*fw*0.22,ay=Yh(Df)+26,al=40-k*k*4;
+    s+='<line x1="'+ax+'" y1="'+ay+'" x2="'+ax+'" y2="'+(ay+al)+'" stroke="var(--warn)" stroke-width="2.5" marker-end="url(#arrw)"/>';
+  }
+  /* GWT */
+  if(!isNaN(gwt)&&gwt<zmax){s+='<line x1="'+pad+'" y1="'+Yh(gwt)+'" x2="'+(W-pad)+'" y2="'+Yh(gwt)+'" stroke="#0ea5e9" stroke-width="1.4" stroke-dasharray="6 4"/>'+
+    '<text x="'+(W-pad-4)+'" y="'+(Yh(gwt)-5)+'" text-anchor="end" font-size="10" fill="#0ea5e9">GWT '+f(gwt,1)+' m</text>';}
+  /* depth ticks */
+  for(var d=0;d<=zmax;d+=2){s+='<line x1="'+(pad-5)+'" y1="'+Yh(d)+'" x2="'+pad+'" y2="'+Yh(d)+'" stroke="var(--bd)"/><text x="'+(pad-9)+'" y="'+(Yh(d)+3)+'" text-anchor="end" font-size="10" fill="var(--mu)">'+d+'</text>';}
+  s+='<text x="16" y="'+(H/2)+'" text-anchor="middle" font-size="11" fill="var(--mu)" transform="rotate(-90 16 '+(H/2)+')">Depth (m)</text>';
+  s+='<text x="'+(W/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="var(--mu)">Pressure bulb ≈ 2B below base (schematic)</text>';
+  s+='<defs><marker id="arrw" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--warn)"/></marker></defs></svg>';
+  return '<div class="card anim" style="animation-delay:.25s"><h2>Pressure distribution below footing (schematic)</h2>'+s+'</div>';
+}
+
+/* ---------- pile shaft friction diagram ---------- */
+function pileDiagram(L,D,PL,shaft){
+  var W=560,H=380,padT=20,padB=24,padL=60,padR=140;
+  var zmax=Math.max(PL+1,Math.max.apply(null,L.map(function(l){return l.z}))+1);
+  var Yh=function(z){return padT+z/zmax*(H-padT-padB)};
+  var fsmax=Math.max.apply(null,shaft.map(function(s){return s.fs}))||100;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" font-family="inherit">';
+  /* soil layers left */
+  L.forEach(function(l){
+    var y1=Yh(l.top==0?0:l.top),y2=Yh(Math.min(l.bot,zmax));
+    s+='<rect x="'+padL+'" y="'+y1+'" width="26" height="'+Math.max(2,y2-y1)+'" fill="'+(l.t=='sand'?'var(--sand)':'var(--clay)')+'" opacity="0.8"/>';
+  });
+  /* pile */
+  var px=W/2;
+  s+='<rect x="'+(px-7)+'" y="'+Yh(0)+'" width="14" height="'+(Yh(PL)-Yh(0))+'" fill="var(--ac)" rx="3"/>'+
+     '<text x="'+(px+16)+'" y="'+(Yh(PL)+4)+'" font-size="10" fill="var(--ac)" font-weight="700">tip @ '+f(PL,1)+' m</text>';
+  /* friction arrows per layer segment */
+  shaft.forEach(function(sg,i){
+    var y1=Yh(sg.a),y2=Yh(sg.b),ym=(y1+y2)/2;
+    var len=8+60*sg.fs/fsmax,dir=sg.side||1;
+    for(var k=0;k<3;k++){
+      var yy=ym+(k-1)*((y2-y1)/3);
+      s+='<line x1="'+(px-10)+'" y1="'+(yy)+'" x2="'+(px-10-len)+'" y2="'+(yy)+'" stroke="var(--warn)" stroke-width="2" marker-end="url(#arrp)" opacity="0.9"/>';
+    }
+    if(y2-y1>22)s+='<text x="'+(px-20-len)+'" y="'+ym+'" text-anchor="end" font-size="9.5" fill="var(--mu)">f_s='+f(sg.fs,0)+' kPa</text>';
+  });
+  /* depth ticks right */
+  for(var d=0;d<=Math.ceil(zmax);d+=2){s+='<line x1="'+(W-padR)+'" y1="'+Yh(d)+'" x2="'+(W-padR+5)+'" y2="'+Yh(d)+'" stroke="var(--bd)"/><text x="'+(W-padR+9)+'" y="'+(Yh(d)+3)+'" font-size="10" fill="var(--mu)">'+d+'</text>';}
+  s+='<text x="'+(W-padR+9)+'" y="'+(padT-6)+'" font-size="10" fill="var(--mu)">Depth (m)</text>';
+  s+='<defs><marker id="arrp" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--warn)"/></marker></defs></svg>';
+  return '<div class="card anim" style="animation-delay:.35s"><h2>Pile shaft friction distribution</h2>'+s+
+   '<p class="note">Arrow length ∝ unit skin friction f<sub>s</sub> (Broms). Skin friction acts upward along the shaft; tip bears on the layer at '+f(PL,1)+' m.</p></div>';
+}
+
+/* ---------- bearing capacity factors (Meyerhof/Vesic, IS 6403 style) ---------- */
+function factors(phiDeg,B,L,Df){
+  var p=phiDeg*Math.PI/180;
+  var Kp=Math.pow(Math.tan(Math.PI/4+p/2),2);
+  var Nq=Math.exp(Math.PI*Math.tan(p))*Kp;
+  var Nc=(Nq-1)/Math.tan(p);
+  var Ng=2*(Nq+1)*Math.tan(p);             /* Vesic */
+  var BL=L>0?B/L:0;                        /* L=0 → strip */
+  /* shape factors (Meyerhof) */
+  var sq=1+0.1*Kp*BL, sg=1+0.1*Kp*BL;
+  /* depth factors (Meyerhof) */
+  var k=Df/B;
+  var dq=1+0.1*Math.sqrt(Kp)*k, dg=dq;
+  if(k>1){dq=1+0.1*Math.sqrt(Kp)*Math.atan(k);dg=dq;}
+  return{Nq:Nq,Nc:Nc,Ng:Ng,sq:sq,sg:sg,dq:dq,dg:dg};
+}
+
+/* ---------- shallow footing ---------- */
+function shallow(L,sig,gwt,settleMM){
+  var sh=$('#shape').value,B=num('#B'),Lf=sh=='rect'?num('#L'):B,Df=num('#Df');
+  if(!(B>0)||!(Df>=0)||(sh=='rect'&&!(Lf>0)))return '<div class="card">Enter valid footing dimensions.</div>';
+  /* influence zone Df → Df + B (per paper flow chart) */
+  var z=L.filter(function(l){return l.z>=Df-1e-6&&l.z<=Df+B+1e-6});
+  if(!z.length){var best=L.reduce(function(a,l){return Math.abs(l.z-Df)<Math.abs(a.z-Df)?l:a});z=[best]}
+  var avg=function(k){return z.reduce(function(s,l){return s+l[k]},0)/z.length};
+  var host=L.filter(function(l){return Df>=l.top&&Df<l.bot})[0]||z[0];
+  var out='';
+
+  if(host.t=='sand'){
+    var N=avg('np'),phi=avg('phi'),W1=gwt>=Df?1:0.5+0.5*gwt/Df,
+        W2=0.5+0.5*Math.min(1,Math.max(0,(gwt-Df)/B));
+    /* ---- Teng net safe bearing (shear) & settlement pressure ---- */
+    var qnuT=0.33*N*N*B*W2+(100+N*N)*Df*W1, qnsT=qnuT/3;
+    var s=settleMM||40;
+    var qsp=1.4*Math.max(0,N-3)*Math.pow((B+0.3)/(2*B),2)*W2*Math.min(1.2,1+0.2*Df/B)*s;
+    /* ---- IS 6403 / Meyerhof net safe bearing, with local-shear check ---- */
+    var ph=phi, local=phi<28;                 /* Terzaghi: local shear in loose/medium sand */
+    if(local)ph=Math.atan(2/3*Math.tan(phi*Math.PI/180))*180/Math.PI;
+    var fa=factors(ph,B,Lf||B,Df), gam=avg('g');
+    /* water factors: Wq for surcharge zone, Wγ for unit-weight zone */
+    var wq=W1, wg=gwt<=Df?0.5:(gwt>=Df+B?1:0.5+0.5*(gwt-Df)/B);
+    var qo=gam*Df*W1;                          /* effective overburden at base ≈ γ·Df (above WT) */
+    var qnuIS=qo*(fa.Nq-1)*fa.sq*fa.dq*wq
+             +0.5*gam*B*fa.Ng*fa.sg*fa.dg*wg;
+    var qnsIS=qnuIS/3;
+    var qAllow=Math.min(qnsIS,qsp);
+    var gov=qnsIS<qsp?'Shear (IS 6403)':'Settlement (Teng)';
+
+    out='<div class="card"><div class="result-hero"><div class="grow"><div>Allowable bearing pressure</div>'+
+      '<div class="big">'+f(qAllow,1)+' <small>kPa</small></div>'+
+      '<div class="chips"><span class="chip '+(qAllow==qnsIS?'ok':'')+'">governed by '+esc(gov)+'</span>'+
+      (local?'<span class="chip">local shear: φ<sub>m</sub>= '+f(ph,1)+'°</span>':'<span class="chip ok">general shear</span>')+'</div></div>'+
+      '<div style="min-width:230px">'+
+      kv('Net safe q<sub>ns</sub> — IS 6403',''+f(qnsIS,1)+' kPa')+
+      kv('Net safe q<sub>sp</sub> — Teng ('+s+' mm)',''+f(qsp,1)+' kPa')+
+      kv('Net ultimate q<sub>nu</sub> — Teng',''+f(qnuT,1)+' kPa → q<sub>ns</sub>= '+f(qnsT,1)+' kPa')+
+      '</div></div>'+
+      '<details class="coll"><summary>IS 6403 calculation detail</summary><div class="inner">'+
+      kv('N′ / φ used',''+f(N,1)+' / '+f(phi,1)+'°'+(local?' → φ<sub>m</sub>= '+f(ph,1)+'°':''))+
+      kv('N<sub>q</sub> · N<sub>c</sub> · N<sub>γ</sub>',''+f(fa.Nq,2)+' · '+f(fa.Nc,2)+' · '+f(fa.Ng,2))+
+      kv('s<sub>q</sub>/s<sub>γ</sub> · d<sub>q</sub>/d<sub>γ</sub>',''+f(fa.sq,2)+'/'+f(fa.sg,2)+' · '+f(fa.dq,2)+'/'+f(fa.dg,2))+
+      kv('W′ (surcharge) / W″ (unit wt)',''+f(W1,2)+' / '+f(wg,2))+
+      kv('q<sub>o</sub> at base',''+f(qo,1)+' kPa')+
+      kv('Net ultimate q<sub>nu</sub> (IS)',''+f(qnuIS,1)+' kPa')+
+      '</div></details></div>';
+  }else{
+    /* cohesive soil — Skempton/IS 6403 φ=0 */
+    var cu=avg('cu');
+    var sc=sh=='strip'?1:sh=='circ'?1.3:1+0.2*B/Lf;
+    var dc=Math.min(1.5,1+0.2*Df/B);
+    var qnu=cu*5.7*sc*dc, qns=qnu/3;
+    out='<div class="card"><div class="result-hero"><div class="grow"><div>Net safe bearing pressure (clay)</div>'+
+      '<div class="big">'+f(qns,1)+' <small>kPa</small></div>'+
+      '<div class="chips"><span class="chip ok">governed by undrained shear</span><span class="chip">FS = 3</span></div></div>'+
+      '<div style="min-width:230px">'+
+      kv('Average c<sub>u</sub>',''+f(cu,1)+' kPa')+
+      kv('N<sub>c</sub>','5.7')+
+      kv('s<sub>c</sub>',''+f(sc,2))+kv('d<sub>c</sub>',''+f(dc,2))+
+      kv('Net ultimate q<sub>nu</sub>',''+f(qnu,1)+' kPa')+
+      '</div></div></div>';
+  }
+  return out+footingDiagram(L,B,Df,gwt,qAllow)+charts(L,{B:B,Df:Df})+'<div class="card anim"><h2>Layer properties</h2>'+layerTable(L)+'</div>';
+}
+
+/* ---------- pile ---------- */
+function nqBerezantsev(phiDeg){
+  /* Berezantsev Nq for L/D ≤ 15 (interpolated; paper Table/fig values) */
+  var t=[[20,9],[25,12],[30,25],[35,60],[40,160],[45,430]];
+  var p=phiDeg;
+  if(p<=t[0][0])return t[0][1];
+  for(var i=1;i<t.length;i++)if(p<=t[i][0])
+    return t[i-1][1]+(t[i][1]-t[i-1][1])*(p-t[i-1][0])/(t[i][0]-t[i-1][0]);
+  return t[4][1];
+}
+function pile(L,sig,gwt){
+  var D=num('#D'),PL=num('#PL');
+  if(!(D>0)||!(PL>0))return '<div class="card">Enter valid pile dimensions.</div>';
+  var Qs=0,det='',shaft=[];
+  L.forEach(function(l){
+    var a=l.top,b=Math.min(l.bot,PL);if(b<=a)return;
+    var m=(a+b)/2, sv=sig(Math.min(m,PL));    /* σ′v at layer centre (Broms) */
+    var fs;
+    if(l.t=='sand'){
+      fs=Math.min(100,sv*Math.tan(0.75*l.phi*Math.PI/180));
+    }else{
+      var al=l.cu<=25?1:l.cu>=70?0.5:1-0.5*(l.cu-25)/45;
+      fs=al*l.cu;
+    }
+    var q=fs*Math.PI*D*(b-a);Qs+=q;
+    shaft.push({a:a,b:b,fs:fs});
+    det+='<tr><td>'+f(a,1)+' – '+f(b,1)+'</td><td>'+(l.t=='sand'?'Sand':'Clay')+'</td><td>'+f(sv,1)+'</td><td>'+f(fs,1)+'</td><td>'+f(q,0)+'</td></tr>';
+  });
+  /* tip layer & bearing */
+  var tl=L.filter(function(l){return PL>=l.top&&PL<l.bot})[0]||L[L.length-1];
+  var svb=sig(PL);
+  var qp;
+  if(tl.t=='sand'){qp=Math.min(11000,svb*nqBerezantsev(tl.phi));}
+  else qp=9*tl.cu;
+  var Qb=qp*Math.PI*D*D/4,Qu=Qs+Qb,Qa=Qu/2.5;
+
+  return '<div class="card"><div class="result-hero"><div class="grow"><div>Allowable pile load</div>'+
+    '<div class="big">'+f(Qa,0)+' <small>kN</small></div>'+
+    '<div class="chips"><span class="chip ok">FS = 2.5</span></div></div>'+
+    '<div style="min-width:230px">'+
+    kv('Skin friction Q<sub>s</sub>',''+f(Qs,0)+' kN')+
+    kv('End bearing Q<sub>b</sub>',''+f(Qb,0)+' kN')+
+    kv('Ultimate Q<sub>u</sub>',''+f(Qu,0)+' kN')+
+    kv('Tip q<sub>pu</sub>',''+f(qp,0)+' kPa ('+(tl.t=='sand'?'Berezantsev':'9·c<sub>u</sub>')+')')+
+    '</div></div>'+
+    '<p class="warn">Skin friction capped at 100 kPa (Tomlinson); tip pressure capped at 11 000 kPa. '+
+    'Safe load by shear only — no settlement check (per paper limitation).</p></div>'+
+    '<div class="card"><h2>Skin friction by layer</h2><div class="scroll"><table>'+
+    '<tr><th>Depth (m)</th><th>Soil</th><th>σ′<sub>v,avg</sub> (kPa)</th><th>f<sub>s</sub> (kPa)</th><th>Q (kN)</th></tr>'+det+'</table></div></div>'+
+    pileDiagram(L,D,PL,shaft)+
+    charts(L,{PL:PL,D:D})+
+    '<div class="card"><h2>Layer properties</h2>'+layerTable(L)+'</div>';
+}
+
+/* ---------- solve ---------- */
+function solve(){
+  var e=$('#err');e.textContent='';
+  var rd=readLayers();
+  if(rd.err){e.textContent=rd.err;return}
+  var gwt=num('#gwt');
+  if(isNaN(gwt)){e.textContent='Enter the water table depth (use a large value if none).';return}
+  var c=corrFactors(),L=rd.layers,sig=buildProfile(L,gwt,c);
+  var settle=num('#settle');
+  $('#out').innerHTML=mode==1?shallow(L,sig,gwt,isNaN(settle)?40:settle):pile(L,sig,gwt);
+  enhance();
+  window.scrollTo({top:$('#out').offsetTop-70,behavior:'smooth'});
+}
+/* staggered card reveal + count-up on headline result */
+function enhance(){
+  document.querySelectorAll('#out .card').forEach(function(c,i){
+    c.classList.add('anim');c.style.animationDelay=(i*0.07)+'s';
+  });
+  document.querySelectorAll('#out .big').forEach(function(el){
+    var m=el.textContent.match(/-?[\d,]+\.?\d*/),node=el.firstChild;
+    if(!m||!node||node.nodeType!=3)return;
+    var target=parseFloat(m[0].replace(/,/g,'')),dec=(m[0].split('.')[1]||'').length,t0=null,dur=800;
+    (function step(ts){
+      if(!t0)t0=ts;var p=Math.min(1,(ts-t0)/dur),e=1-Math.pow(1-p,3);
+      node.textContent=(target*e).toFixed(dec)+' ';
+      if(p<1)requestAnimationFrame(step);else node.textContent=target.toFixed(dec)+' ';
+    })(performance.now());
+  });
+}
+
+/* ---------- wiring ---------- */
+$('#t1').onclick=function(){setMode(1);example()};
+$('#t2').onclick=function(){setMode(2);example()};
+$('#add').onclick=function(){
+  var r=document.querySelectorAll('#rows tr'),last=r.length?parseFloat(r[r.length-1].querySelector('input').value)||0:0;
+  addRow(last+1.5,'sand','','');
+};
+$('#ex').onclick=example;
+$('#clr').onclick=function(){$('#rows').innerHTML='';$('#out').innerHTML='';$('#err').textContent=''};
+$('#solve').onclick=solve;
+$('#themeBtn').onclick=function(){
+  var r=document.documentElement;
+  r.dataset.theme=(r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches))?'light':'dark';
+};
+setMode(1);example();
+</script>
+</body>
+</html>
